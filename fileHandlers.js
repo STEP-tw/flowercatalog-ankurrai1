@@ -17,6 +17,9 @@ const servRegularFile=function (req,resp) {
 const goToHome=function(req,resp){
   resp.redirect('index.html');
 };
+const goToComments=function (req,resp) {
+  resp.redirect('/templates/comments.html');
+}
 
 const loginGuestBook= function(req,resp) {
   let user = session[req.cookies.sessionid];
@@ -50,6 +53,7 @@ const logoutUser = function(req,resp) {
   resp.redirect('/login.html')
 }
 
+exports.goToComments=goToComments
 exports.goToHome=goToHome;
 exports.loginGuestBook=loginGuestBook;
 exports.servRegularFile=servRegularFile;

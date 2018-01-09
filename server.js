@@ -1,6 +1,6 @@
 const http = require('http');
 
-// const logAndStoreRequest=require('./utils.js').logAndStoreRequest;
+const logAndStoreRequest=require('./utils.js').logAndStoreRequest;
 
 const create= require('./frameWork.js').create;
 
@@ -10,17 +10,17 @@ const loginGuestBook=require('./fileHandlers.js').loginGuestBook;
 const loginUser=require('./fileHandlers.js').loginUser;
 const registerUser=require('./fileHandlers.js').registerUser;
 const logoutUser=require('./fileHandlers.js').logoutUser;
+const goToComments=require('./fileHandlers.js').goToComments;
 
 const port = 3000;
 
 const requestlistener = create();
 
-// requestlistener.preProcessUse(logAndStoreRequest);
-
+requestlistener.preProcessUse(logAndStoreRequest);
 requestlistener.get("/",goToHome);
-// requestlistener.post('/registration',registerUser);
-// requestlistener.post('/login',loginUser);
-// requestlistener.get('/guestBook.html',loginUser);
+requestlistener.post('/registration',registerUser);
+requestlistener.post('/login',loginUser);
+requestlistener.get('/templates/guestBook.html',goToComments);
 // requestlistener.get('/logout.html',logoutUser);
 // requestlistener.post('/feedBack',storeComments);
 requestlistener.postProcessUse(servRegularFile);

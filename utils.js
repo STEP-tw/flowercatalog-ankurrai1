@@ -1,4 +1,5 @@
-const AddBehaviour = function(req, resp) {
+
+const fs = require('fs');const AddBehaviour = function(req, resp) {
   resp.redirect = redirect.bind(resp);
   req.urlIsOneOf = urlIsOneOf.bind(req);
   resp.serve = serve.bind(resp);
