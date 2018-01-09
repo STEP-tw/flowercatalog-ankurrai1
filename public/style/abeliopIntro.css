@@ -1,0 +1,40 @@
+#innerwrapeer {
+  width: 90%;
+  font-family: sans-serif;
+  margin: 0 auto;
+}
+
+h1 {
+  color: rgb(223, 195, 9);
+  font-family: sans-serif;
+  font-size: 50px;
+  border-bottom: 3px solid gray;
+  padding-bottom: 20px;
+}
+
+.flower {
+  float: left;
+  width: 400px;
+  height: 500px;
+}
+
+.downloadLink {
+  margin-right: 400px;
+}
+
+.text {
+  margin-top: 200px;
+  float: right;
+  width: 600px;
+  height: 600px;
+  margin-right: 100px;
+  text-align: left;
+}
+#boldText {
+font-weight: bold;
+}
+#secondText {
+width: 536px;
+float: right;
+margin-top: 168px;
+}
