@@ -1,63 +1,116 @@
 const fs = require('fs');
 const getContentType = require('./utils.js').getContentType;
-let validUsers=[];
+
+let validUsers = [{
+  userName: 'ankurrai',
+  password: 'ankur'
+}, {
+  userName: 'yogi',
+  password: 'none'
+}];
+
 let comments;
 
+const loadUser = (req, res) => {
+  let sessionid = req.cookies.sessionid;
+  let user = registeredUsers.find(u => u.sessionid == sessionid);
+  if (sessionid && user) {
+    req.user = user;
+  }
+};
 
-const servRegularFile=function (req,resp) {
-  let filePath=req.url;
-  console.log(filePath);
-  resp.setHeader('Content-Type',getContentType(filePath))
-  fs.readFile(`./public${filePath}`,(error,data)=>{
-    if(error) return resp.writeError();
+const redirectInvalidUser = function(resp) {
+  resp.setHeader('Set-Cookie', 'logInFailed=true');
+  resp.redirect('/templates/comments.html');
+}
+
+const serveRegularFile = function(req, resp) {
+  let filePath = req.url;
+  fs.readFile(`./public${filePath}`, (error, data) => {
+    if (error) return resp.writeError();
+    resp.setHeader('Content-Type', getContentType(filePath))
     resp.serve(data);
   });
 };
 
-const goToHome=function(req,resp){
+const goToHome = function(req, resp) {
   resp.redirect('index.html');
 };
-const goToComments=function (req,resp) {
-  resp.redirect('/templates/comments.html');
-}
 
-const loginGuestBook= function(req,resp) {
+const loginGuestBook = function(req, resp) {
   let user = session[req.cookies.sessionid];
-  if(!user) return resp.redirect('/login.html');
-}
+  if (!user) return resp.redirect('/login.html');
+};
 
-const loginUser = function(req,resp) {
-  let username = req.body.username;
-  if(!registeredUsers.includes(username)) return respondLoginFailed(resp);
-  let sessionid = new Date().getTime();
-  session[sessionid] = username;
-  resp.setHeader('Set-Cookie',`sessionid=${sessionid}`);
-  responseWithGuestBook(resp);
-}
-
-const registerUser = function(req,resp) {
-  validUsers.push(req.body.username);
-  resp.redirect('/guestBook.html');
-}
-
-const readComments = function(){
-  fs.readFile('./dataBackup/userAndComment.json',(err,data) =>{
-    if (err) console.log("dataBackup file not found");
-    comments = JSON.parse(data);
+const getValidUser = function(req) {
+  let userName = req.body.userName;
+  let password = req.body.password;
+  return validUsers.find(ValidUser => {
+    return ValidUser.userName == userName && ValidUser.password == password;
   });
+};
+
+const SetCookie = function(resp) {
+  let sessionid = new Date().getTime();
+  resp.setHeader('Set-Cookie', `sessionid=${sessionid}`);
 }
 
-const logoutUser = function(req,resp) {
-  let time = new Date().toUTCString();
-  resp.setHeader('Set-Cookie',[`logInFailed=false; Expires=${time}`,`sessionid=0; Expires=${time}`]);
+const loginUser = function(req, resp) {
+  let user = getValidUser(req);
+  if (!user) return redirectInvalidUser(resp);
+  SetCookie(resp);
+  resp.redirect(`guestBook.html`)
+};
+
+const readComments = function(filePath) {
+  let fileContent = fs.readFileSync(filePath, 'utf8');
+  console.log(filePath);
+  console.log(fileContent);
+  comments = JSON.parse(fileContent);
+};
+
+const logoutUser = function(req, resp) {
+  let time = new Date(1).toUTCString();
+  resp.setHeader('Set-Cookie', [`logInFailed=false; Expires=${time}`, `sessionid=0; Expires=${time}`]);
   resp.redirect('/login.html')
+};
+
+const storeToBackup = function() {
+  fs.writeFile("./dataBackup/userAndComment.json", JSON.stringify(comments, null, 1), (err) => {
+    if (err) console.log('failed to store data to backup file');
+  });
+};
+
+const storeToScript = function() {
+  fs.writeFile("./public/script/data.js", `var data=${JSON.stringify(comments, null, 1)}`, (err) => {
+    if (!err) console.log('data stored');
+  });
+};
+
+const getCurrentTime = () => {
+  let currentDateTime = new Date();
+  return currentDateTime.toLocaleString();
+};
+
+const storeFeedback = function(req) {
+  let nameAndComment = req.body;
+  nameAndComment.dateTime = getCurrentTime();
+  comments.unshift(nameAndComment);
+  storeToBackup();
+  storeToScript();
 }
 
-exports.goToComments=goToComments
-exports.goToHome=goToHome;
-exports.loginGuestBook=loginGuestBook;
-exports.servRegularFile=servRegularFile;
-exports.loginGuestBook=loginGuestBook;
-exports.loginUser=loginUser;
-exports.registerUser=registerUser;
-exports.logoutUser=logoutUser;
+const storeCommentsAndRedirect = function(req, resp) {
+  readComments('./dataBackup/userAndComment.json');
+  storeFeedback(req);
+  resp.redirect(`guestBook.html`);
+};
+
+exports.storeCommentsAndRedirect = storeCommentsAndRedirect;
+exports.goToHome = goToHome;
+exports.loginGuestBook = loginGuestBook;
+exports.serveRegularFile = serveRegularFile;
+exports.loginGuestBook = loginGuestBook;
+exports.loginUser = loginUser;
+exports.logoutUser = logoutUser;
+exports.loadUser = loadUser;

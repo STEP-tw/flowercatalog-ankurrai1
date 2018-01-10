@@ -1,4 +1,3 @@
-
 const fs = require('fs');const AddBehaviour = function(req, resp) {
   resp.redirect = redirect.bind(resp);
   req.urlIsOneOf = urlIsOneOf.bind(req);
@@ -18,8 +17,7 @@ const runProcessors = function(processors, req, resp) {
   // middleware.bind(null,req,resp);
   processors.forEach((process)=>{
     if (resp.finished) return;
-    console.log(resp.finished,process);
-    process(req, resp);
+    process(req,resp);
   })
 }
 
@@ -47,19 +45,23 @@ const invoke = function(req, resp) {
   let handler = this.handlers[req.method][req.url];
   if (!handler) return;
   handler(req, resp);
-}
+};
 
 const toKeyValue = function(keyValue) {
   let parts = keyValue.split('=');
-  let key = parts[0].trim();
-  let value = parts[1].trim();
-  let keyWithValue = {
-    key: value
-  };
-  return keyWithValue;
+  return {key:parts[0].trim(),value:parts[1].trim()}
 };
 
-const parseBody = text => text && text.split('&').map(toKeyValue) || {};
+const accumulate=function (keysAndValues,keyValue) {
+  keysAndValues[keyValue.key]=keyValue.value;
+  return keysAndValues;
+};
+
+const parseBody =function (text) {
+  let keyAndValue={};
+  if (!text) return keyAndValue;
+  return text.split('&').map(toKeyValue).reduce(accumulate,{})
+};
 
 const writeError = function() {
   this.statusCode = 404;
@@ -97,19 +99,10 @@ const getContentType = function(filePath) {
   return headers[fileExt];
 };
 
-const loadUser = (req, res) => {
-  let sessionid = req.cookies.sessionid;
-  let user = registeredUsers.find(u => u.sessionid == sessionid);
-  if (sessionid && user) {
-    req.user = user;
-  }
-};
-
 const toString = content => JSON.stringify(content, null, 2);
 
 exports.invoke = invoke;
 exports.toString = toString;
-exports.loadUser = loadUser;
 exports.parseBody = parseBody;
 exports.getValidOne = getValidOne;
 exports.runProcessors = runProcessors;

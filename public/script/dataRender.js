@@ -4,7 +4,7 @@ let displayComments = function() {
 
 const inSingleHtml = function(feedBacks) {
   let feedBacksInHtml = feedBacks.map(intoTableRow);
-  feedBacksInHtml.unshift(`<tr><th>Date And Time </th><th>Name</th><th>Comments</th></tr>`);
+  feedBacksInHtml.unshift(`<tr align="left"><th>Date And Time </th><th>Name</th><th>Comments</th></tr>`);
   return feedBacksInHtml.join('<br>');
 };
 
