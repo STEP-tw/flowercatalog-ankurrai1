@@ -10,6 +10,7 @@ let validUsers = [{
 }];
 
 let comments;
+let session={};
 
 let redirectLoggedInUserToHome = function (req,resp){
   if(req.urlIsOneOf(['./comments.html']) && req.user) resp.redirect('guestBook.html');
@@ -18,9 +19,8 @@ let redirectLoggedInUserToHome = function (req,resp){
 const loadUser = (req, res) => {
   let sessionid = req.cookies.sessionid;
   if(!sessionid) return;
-  let user = validUsers.find(u => u.sessionid == sessionid);
-  if (sessionid && user) {
-    req.user = user;
+  if (session.sessionid==sessionid) {
+    req.user = session;
   }
 };
 
@@ -60,6 +60,7 @@ const getValidUser = function(req) {
 const SetCookie = function(resp,user) {
   let sessionid = new Date().getTime();
   user.sessionid = sessionid;
+  session=user;
   resp.setHeader('Set-Cookie', `sessionid=${sessionid}`);
 }
 
@@ -80,6 +81,7 @@ const readComments = function(filePath) {
 const logoutUser = function(req, resp) {
   let time = new Date(1).toUTCString();
   resp.setHeader('Set-Cookie', [`logInFailed=false; Expires=${time}`, `sessionid=0; Expires=${time}`]);
+  session={};
   resp.redirect('comments.html')
 };
 
