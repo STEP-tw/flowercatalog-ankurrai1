@@ -12,23 +12,24 @@ const loginGuestBook=require('./fileHandlers.js').loginGuestBook;
 const loginUser=require('./fileHandlers.js').loginUser;
 const logoutUser=require('./fileHandlers.js').logoutUser;
 const storeCommentsAndRedirect=require('./fileHandlers.js').storeCommentsAndRedirect;
+const redirectLoggedInUserToHome=require('./fileHandlers.js').redirectLoggedInUserToHome;
 
-const requestlistener = create();
+const app = create();
 
-let redirectLoggedInUserToHome = (req,resp)=>{
-  if(req.urlIsOneOf(['/','/login']) && req.user) resp.redirect('/home');
-}
+app.preProcessUse(logAndStoreRequest);
+app.preProcessUse(loadUser);
+app.preProcessUse(redirectLoggedInUserToHome);
 
-// requestlistener.preProcessUse(loadUser);
-requestlistener.preProcessUse(logAndStoreRequest);
-requestlistener.get("/",goToHome);
-requestlistener.post('/templates/login',loginUser);
-requestlistener.post('/templates/feedBack',storeCommentsAndRedirect);
-// requestlistener.get('/logout.html',logoutUser);
-requestlistener.postProcessUse(serveRegularFile);
+app.get("/",goToHome);
+app.get('/templates/logout',logoutUser);
+
+app.post('/templates/login',loginUser);
+app.post('/templates/feedBack',storeCommentsAndRedirect);
+
+app.postProcessUse(serveRegularFile);
 
 
-const server = http.createServer(requestlistener);
+const server = http.createServer(app);
 server.listen(port);
 server.on('error', (e) => console.error(`Server Error :::: ${e.message}`));
 console.log(`Listening to Port ${port}`);

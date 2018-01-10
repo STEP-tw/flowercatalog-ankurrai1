@@ -4,9 +4,11 @@ const parseBody = require('./utils.js').parseBody;
 const invoke = require('./utils.js').invoke;
 const respondError = require('./utils.js').respondError;
 const runProcessors=require('./utils.js').runProcessors;
-
+const qs=require('querystring');
 
 const eventHandler = function(req, resp) {
+  req.cookies = qs.parse(req.headers.cookie||'');
+  console.log(req.cookies);
   let content = "";
   req.on('data', data => content += data.toString());
   req.on('end', () => {

@@ -11,9 +11,14 @@ let validUsers = [{
 
 let comments;
 
+let redirectLoggedInUserToHome = function (req,resp){
+  if(req.urlIsOneOf(['./comments.html']) && req.user) resp.redirect('guestBook.html');
+};
+
 const loadUser = (req, res) => {
   let sessionid = req.cookies.sessionid;
-  let user = registeredUsers.find(u => u.sessionid == sessionid);
+  if(!sessionid) return;
+  let user = validUsers.find(u => u.sessionid == sessionid);
   if (sessionid && user) {
     req.user = user;
   }
@@ -33,6 +38,8 @@ const serveRegularFile = function(req, resp) {
   });
 };
 
+
+
 const goToHome = function(req, resp) {
   resp.redirect('index.html');
 };
@@ -50,15 +57,16 @@ const getValidUser = function(req) {
   });
 };
 
-const SetCookie = function(resp) {
+const SetCookie = function(resp,user) {
   let sessionid = new Date().getTime();
+  user.sessionid = sessionid;
   resp.setHeader('Set-Cookie', `sessionid=${sessionid}`);
 }
 
 const loginUser = function(req, resp) {
   let user = getValidUser(req);
   if (!user) return redirectInvalidUser(resp);
-  SetCookie(resp);
+  SetCookie(resp,user);
   resp.redirect(`guestBook.html`)
 };
 
@@ -72,7 +80,7 @@ const readComments = function(filePath) {
 const logoutUser = function(req, resp) {
   let time = new Date(1).toUTCString();
   resp.setHeader('Set-Cookie', [`logInFailed=false; Expires=${time}`, `sessionid=0; Expires=${time}`]);
-  resp.redirect('/login.html')
+  resp.redirect('comments.html')
 };
 
 const storeToBackup = function() {
@@ -106,6 +114,7 @@ const storeCommentsAndRedirect = function(req, resp) {
   resp.redirect(`guestBook.html`);
 };
 
+exports.redirectLoggedInUserToHome=redirectLoggedInUserToHome
 exports.storeCommentsAndRedirect = storeCommentsAndRedirect;
 exports.goToHome = goToHome;
 exports.loginGuestBook = loginGuestBook;
